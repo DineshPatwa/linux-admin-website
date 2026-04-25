@@ -220,11 +220,15 @@ This is the **Frontend Web Server**.
 3. **Configuration:** You must update the Nginx server block to forward `/api` requests to your Backend VM. Add this inside your `server { }` block:
 ```nginx
     location /api/ {
-        proxy_pass http://<BACKEND_VM_INTERNAL_IP>:3000/;
+        proxy_pass http://<BACKEND_VM_INTERNAL_IP>:3000/api/;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
 ```
+4. **SELinux Override (CRITICAL):** By default, CentOS/RHEL blocks Nginx from making outbound proxy connections. You must allow it by running:
+   ```bash
+   sudo setsebool -P httpd_can_network_connect 1
+   ```
 
 ### Tier 2: Application Layer (Node.js Backend VM)
 This is the **API Server**.
@@ -245,6 +249,10 @@ This is the **API Server**.
      ```
    - Start the server: `node server.js` (Use `pm2` for production background running).
 4. **Firewall:** Open port `3000` to allow the Nginx VM to communicate with it.
+   ```bash
+   sudo firewall-cmd --permanent --add-port=3000/tcp
+   sudo firewall-cmd --reload
+   ```
 
 ### Tier 3: Data Layer (MySQL VM)
 This is the **Database Server**.
@@ -253,6 +261,11 @@ This is the **Database Server**.
    - Install MySQL: `sudo dnf install mysql-server -y` (RHEL/CentOS)
    - Start it: `sudo systemctl enable --now mysqld`
 3. **Configuration:**
+   - Allow external connections by editing the MySQL config:
+     ```bash
+     sudo vi /etc/my.cnf.d/mysql-server.cnf
+     ```
+     Add `bind-address = 0.0.0.0` under the `[mysqld]` section and run `sudo systemctl restart mysqld`.
    - Run `sudo mysql_secure_installation`.
    - Log into MySQL: `sudo mysql`
    - Create the user for the backend:
