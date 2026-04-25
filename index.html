@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinuxMastery — Complete Linux Learning Platform</title>
+  <meta name="description" content="Learn Linux from beginner to advanced with real-world examples, hands-on labs, and interview preparation. RHEL-focused Linux admin and DevOps training.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-container">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="logo">LM</div>
+      <div>
+        <div class="brand-text">LinuxMastery</div>
+        <div class="brand-sub">Learn → Practice → Master</div>
+      </div>
+    </div>
+    <div class="sidebar-progress">
+      <div class="progress-label">
+        <span>Your Progress</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Home -->
+      <div class="nav-section"><div class="nav-section-title">Overview</div></div>
+      <div class="nav-item active" data-page="home"><span class="nav-icon">🏠</span> Home<span class="nav-check">✓</span></div>
+
+      <!-- Linux Basics -->
+      <div class="nav-section"><div class="nav-section-title">Linux Basics</div></div>
+      <button class="nav-group-toggle open" data-group="basics"><span class="nav-icon">📗</span> Basic Topics <span class="arrow">▶</span></button>
+      <div class="nav-group-content open" id="group-basics">
+        <div class="nav-item" data-page="basic-commands"><span class="nav-icon">⌨️</span> Basic Commands<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="editors"><span class="nav-icon">📝</span> Vi/Vim & Nano<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="runlevels"><span class="nav-icon">🔄</span> Runlevels<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="permissions"><span class="nav-icon">🔐</span> Ownership & Permissions<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="find-grep"><span class="nav-icon">🔍</span> Find / Locate / Grep<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="backup"><span class="nav-icon">💾</span> Backup: Cp, Mv, Rsync<span class="nav-check">✓</span></div>
+      </div>
+
+      <!-- Intermediate -->
+      <div class="nav-section"><div class="nav-section-title">Intermediate</div></div>
+      <button class="nav-group-toggle" data-group="intermediate"><span class="nav-icon">📘</span> Intermediate Topics <span class="arrow">▶</span></button>
+      <div class="nav-group-content" id="group-intermediate">
+        <div class="nav-item" data-page="process"><span class="nav-icon">⚙️</span> Process Management<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="networking"><span class="nav-icon">🌐</span> Networking<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="storage"><span class="nav-icon">💿</span> Disk & Storage<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="systemd"><span class="nav-icon">🔧</span> Systemd & Services<span class="nav-check">✓</span></div>
+      </div>
+
+      <!-- Advanced -->
+      <div class="nav-section"><div class="nav-section-title">Advanced</div></div>
+      <button class="nav-group-toggle" data-group="advanced"><span class="nav-icon">📕</span> Advanced Topics <span class="arrow">▶</span></button>
+      <div class="nav-group-content" id="group-advanced">
+        <div class="nav-item" data-page="logs"><span class="nav-icon">📊</span> Logs & Monitoring<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="performance"><span class="nav-icon">🚀</span> Performance Tuning<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="security"><span class="nav-icon">🛡️</span> Security & SSH<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="scripting"><span class="nav-icon">📜</span> Shell Scripting<span class="nav-check">✓</span></div>
+        <div class="nav-item" data-page="kernel"><span class="nav-icon">🧠</span> Kernel & Advanced<span class="nav-check">✓</span></div>
+      </div>
+
+      <!-- Projects / Scenarios / Interview / Labs -->
+      <div class="nav-section"><div class="nav-section-title">Practical</div></div>
+      <div class="nav-item" data-page="projects"><span class="nav-icon">🏗️</span> Real-World Projects<span class="nav-check">✓</span></div>
+      <div class="nav-item" data-page="troubleshooting"><span class="nav-icon">🔥</span> Troubleshooting<span class="nav-check">✓</span></div>
+      <div class="nav-item" data-page="interview"><span class="nav-icon">🎯</span> Interview Prep<span class="nav-check">✓</span></div>
+      <div class="nav-item" data-page="labs"><span class="nav-icon">🧪</span> Practice Labs<span class="nav-check">✓</span></div>
+    </nav>
+  </aside>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <button class="hamburger" id="hamburger">☰</button>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search topics, commands..." autocomplete="off">
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="main-content" id="main-content">
+    <!-- Pages are loaded here by JS -->
+  </main>
+
+</div>
+
+<!-- Bootstrap: define page registry before content scripts -->
+<script>
+  window.LM = { pages: {}, searchIndex: [] };
+  window.LM.registerPage = function(id, html, searchTerms) {
+    window.LM.pages[id] = html;
+    if (searchTerms) {
+      searchTerms.forEach(function(term) {
+        window.LM.searchIndex.push({ page: id, title: term.title, section: term.section || '' });
+      });
+    }
+  };
+</script>
+<!-- Content Scripts -->
+<script src="pages-home.js"></script>
+<script src="pages-basic-commands.js"></script>
+<script src="pages-basic-editors.js"></script>
+<script src="pages-basic-runlevels.js"></script>
+<script src="pages-basic-permissions.js"></script>
+<script src="pages-basic-findgrep.js"></script>
+<script src="pages-basic-backup.js"></script>
+<script src="pages-intermediate.js"></script>
+<script src="pages-advanced.js"></script>
+<script src="pages-practical.js"></script>
+<script src="pages-interview-labs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
