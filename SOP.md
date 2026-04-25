@@ -125,7 +125,46 @@ sudo chown -R www-data:www-data /var/www/html   # For Ubuntu
 sudo chown -R nginx:nginx /var/www/html         # For RHEL/CentOS
 ```
 
-### Step 4: Configure the Firewall
+### Step 4: Configure Nginx Server Block
+By default, Nginx needs to know your domain name to serve the correct files and to allow Certbot to install SSL certificates automatically.
+
+**For RHEL/CentOS/AlmaLinux:**
+```bash
+sudo vi /etc/nginx/conf.d/yourdomain.conf
+```
+
+**For Ubuntu/Debian:**
+```bash
+sudo vi /etc/nginx/sites-available/yourdomain.conf
+```
+
+Press **`i`** to enter Insert mode and paste the following configuration (replace `yourdomain.com` with your actual domain!):
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com www.yourdomain.com;
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+Save and exit (Press **`Esc`**, type **`:wq`**, and press **`Enter`**).
+
+*(For Ubuntu users only, enable the site by linking it)*:
+```bash
+sudo ln -s /etc/nginx/sites-available/yourdomain.conf /etc/nginx/sites-enabled/
+```
+
+Verify the syntax and restart Nginx:
+```bash
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### Step 5: Configure the Firewall
 Ensure that HTTP and HTTPS traffic is allowed through the firewall.
 
 **For UFW (Ubuntu):**
@@ -140,7 +179,7 @@ sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
 ```
 
-### Step 5: Secure the Site with HTTPS (Let's Encrypt)
+### Step 6: Secure the Site with HTTPS (Let's Encrypt)
 Once your domain's DNS A Record (from Phase 3) has propagated to point to your server's IP, you can install a free SSL certificate.
 
 **For Ubuntu:**
@@ -152,7 +191,7 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 **For RHEL/AlmaLinux:**
 ```bash
 sudo dnf install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+sudo certbot --nginx -d devopslinux.online -d www.devopslinux.online
 ```
 
 Certbot will automatically verify your domain, issue an SSL certificate, configure Nginx to use it, and set up a cron job for automatic renewal.
@@ -167,3 +206,60 @@ Whenever you make changes to your website locally, follow this workflow to updat
 2. **Server:** SSH into your server, navigate to `/var/www/html`, and run `sudo git pull origin main`. 
 
 Your website will update instantly without needing to restart the server!
+
+---
+
+## Phase 5: Scaling to a 3-Tier Architecture (3 VMs)
+
+To simulate a true enterprise production environment, we have upgraded the application to a **3-Tier Architecture**. This allows you to split the application across 3 separate Virtual Machines (VMs) for improved security, scalability, and learning!
+
+### Tier 1: Presentation Layer (Nginx VM)
+This is the **Frontend Web Server**.
+1. **VM Purpose:** Serves the static HTML/CSS/JS and acts as a Reverse Proxy.
+2. **Setup:** Same as Phase 4 (Install Nginx, Certbot).
+3. **Configuration:** You must update the Nginx server block to forward `/api` requests to your Backend VM. Add this inside your `server { }` block:
+```nginx
+    location /api/ {
+        proxy_pass http://<BACKEND_VM_INTERNAL_IP>:3000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+```
+
+### Tier 2: Application Layer (Node.js Backend VM)
+This is the **API Server**.
+1. **VM Purpose:** Runs the Node.js Express server to handle login and progress tracking logic.
+2. **Setup:**
+   - Install Node.js: `sudo dnf module install nodejs:18 -y` (or `sudo apt install nodejs npm -y` on Ubuntu)
+   - Copy the `backend/` folder from this project to the VM.
+   - Run `npm install` inside the `backend/` directory.
+3. **Running the Server:**
+   - Create a `.env` file in the `backend/` folder:
+     ```env
+     DB_HOST=<DATABASE_VM_INTERNAL_IP>
+     DB_USER=linuxmastery
+     DB_PASSWORD=your_secure_password
+     DB_NAME=linuxmastery
+     JWT_SECRET=production_secret_key
+     PORT=3000
+     ```
+   - Start the server: `node server.js` (Use `pm2` for production background running).
+4. **Firewall:** Open port `3000` to allow the Nginx VM to communicate with it.
+
+### Tier 3: Data Layer (MySQL VM)
+This is the **Database Server**.
+1. **VM Purpose:** Safely stores the user credentials and their topic progress.
+2. **Setup:**
+   - Install MySQL: `sudo dnf install mysql-server -y` (RHEL/CentOS)
+   - Start it: `sudo systemctl enable --now mysqld`
+3. **Configuration:**
+   - Run `sudo mysql_secure_installation`.
+   - Log into MySQL: `sudo mysql`
+   - Create the user for the backend:
+     ```sql
+     CREATE DATABASE linuxmastery;
+     CREATE USER 'linuxmastery'@'%' IDENTIFIED BY 'your_secure_password';
+     GRANT ALL PRIVILEGES ON linuxmastery.* TO 'linuxmastery'@'%';
+     FLUSH PRIVILEGES;
+     ```
+4. **Firewall:** Open port `3306` (MySQL) to allow *only* the Backend VM to communicate with it.
