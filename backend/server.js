@@ -32,13 +32,13 @@ async function initDB() {
       user: dbConfig.user,
       password: dbConfig.password
     });
-    
+
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
     await connection.end();
 
     // Now connect to the specific database using a connection pool
     pool = mysql.createPool(dbConfig);
-    
+
     // Create Users Table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -59,7 +59,7 @@ async function initDB() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
-    
+
     console.log('✅ Database connected and tables verified.');
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
@@ -75,7 +75,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-for-learning';
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  
+
   if (!token) return res.status(401).json({ error: 'Access denied. No token provided.' });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
@@ -100,7 +100,7 @@ app.post('/api/auth/register', async (req, res) => {
     // Hash password and save
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await pool.query('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-    
+
     res.status(201).json({ message: 'User registered successfully', userId: result.insertId });
   } catch (error) {
     res.status(500).json({ error: 'Server error during registration' });
@@ -112,14 +112,14 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     const [users] = await pool.query('SELECT * FROM users WHERE username = ?', [username]);
-    
+
     if (users.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
-    
+
     const user = users[0];
     const validPassword = await bcrypt.compare(password, user.password);
-    
+
     if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
-    
+
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, username: user.username });
   } catch (error) {
@@ -142,13 +142,13 @@ app.get('/api/progress', authenticateToken, async (req, res) => {
 app.post('/api/progress', authenticateToken, async (req, res) => {
   try {
     const { pageId, isComplete } = req.body;
-    
+
     if (isComplete) {
       await pool.query('INSERT IGNORE INTO user_progress (user_id, page_id) VALUES (?, ?)', [req.user.id, pageId]);
     } else {
       await pool.query('DELETE FROM user_progress WHERE user_id = ? AND page_id = ?', [req.user.id, pageId]);
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Failed to update progress' });

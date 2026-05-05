@@ -9,6 +9,10 @@ window.LM.registerPage('permissions', `
     <div class="analogy-label">💡 Real-World Analogy</div>
     Think of Linux like an <strong>office building</strong>. Each <strong>user</strong> is an employee with their own desk (home directory). A <strong>group</strong> is a department (HR, IT, Finance). Permissions are like <strong>key cards</strong> — some doors are open to everyone, some only to specific departments, some only to individuals.
   </div>
+  <div class="info-box note">
+    <span class="info-icon">🧠</span>
+    <div><strong>Deep Insight:</strong> In Linux, everything is a file, and every file must have an owner and a group. Users are represented numerically by a UID (User ID) and groups by a GID (Group ID) under the hood. The system doesn't actually care about the username 'john'; it only cares about UID 1001. This is why deleting and recreating a user with the same name but a different UID can cause permission issues on their old files. Always manage accounts deliberately!</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># User management</span>
 <span class="cmd">useradd</span> <span class="path">john</span>                    <span class="comment"># Create user</span>
 <span class="cmd">useradd</span> <span class="flag">-m -s /bin/bash</span> <span class="path">john</span>  <span class="comment"># Create with home dir + bash shell</span>
@@ -32,6 +36,11 @@ window.LM.registerPage('permissions', `
 
 <div class="content-section">
   <h2 class="section-title"><span class="icon">🔐</span> Understanding Permission Symbols</h2>
+  <p>Permissions control who can read, write, or execute files. Reading and interpreting permission symbols correctly is crucial for maintaining system security.</p>
+  <div class="info-box note">
+    <span class="info-icon">🧠</span>
+    <div><strong>Deep Insight:</strong> Symbolic notation is strictly positional. The 9 characters (after the file type) are rigidly divided into sets of 3 for <strong>Owner</strong>, <strong>Group</strong>, and <strong>Others</strong>. The positions in each set are always <strong>Read (r)</strong>, <strong>Write (w)</strong>, and <strong>Execute (x)</strong> in that exact order. If a permission is missing, it's replaced with a hyphen (<code class="code-inline">-</code>). Understanding this rigid structure allows you to read permissions at a glance like a barcode.</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="cmd">ls</span> <span class="flag">-l</span> <span class="path">/etc/passwd</span>
 <span class="output">-rw-r--r--. 1 root root 2388 Apr 10 09:30 /etc/passwd</span>
 
@@ -62,7 +71,12 @@ window.LM.registerPage('permissions', `
 </div>
 
 <div class="content-section">
-  <h2 class="section-title"><span class="icon">🛠️</span> Changing Permissions & Ownership</h2>
+  <h2 class="section-title"><span class="icon">🛠️</span> Securing Files: Changing Permissions & Ownership</h2>
+  <p>Securing sensitive files and directories requires correctly applying <code class="code-inline">chmod</code> (change mode) and <code class="code-inline">chown</code> (change owner).</p>
+  <div class="info-box note">
+    <span class="info-icon">🧠</span>
+    <div><strong>Deep Insight:</strong> Security in Linux is layered. Only the <code class="code-inline">root</code> user can change the owner of a file (<code class="code-inline">chown</code>), even if you created the file. This prevents users from "giving away" files to bypass storage quotas. However, a regular user can change the permissions (<code class="code-inline">chmod</code>) or the group (<code class="code-inline">chgrp</code>) of files they own, provided the new group is one they already belong to.</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># chmod — Change permissions</span>
 <span class="cmd">chmod</span> <span class="num">755</span> <span class="path">script.sh</span>           <span class="comment"># Numeric method</span>
 <span class="cmd">chmod</span> <span class="flag">u+x</span> <span class="path">script.sh</span>          <span class="comment"># Symbolic: add execute for user(owner)</span>
@@ -82,6 +96,10 @@ window.LM.registerPage('permissions', `
 
 <div class="content-section">
   <h2 class="section-title"><span class="icon">⭐</span> Special Permissions: SUID, SGID, Sticky Bit</h2>
+  <div class="info-box tip">
+    <span class="info-icon">💡</span>
+    <div><strong>Deep Insight:</strong> Special permissions address complex real-world scenarios. <strong>SUID</strong> solves the "how can a normal user change their password if <code class="code-inline">/etc/shadow</code> is root-only?" problem by running the file as the owner. <strong>SGID</strong> solves "how do multiple users collaborate in a single directory without constantly fixing permissions?" by forcing inherited groups. <strong>Sticky Bit</strong> solves "how do we have a public drop-folder where users can't delete each other's work?" by restricting deletion to file owners.</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># SUID (Set User ID) — File runs as the FILE OWNER, not the user running it</span>
 <span class="comment"># Example: /usr/bin/passwd has SUID so normal users can change their password</span>
 <span class="cmd">chmod</span> <span class="flag">u+s</span> <span class="path">program</span>       <span class="comment"># Set SUID</span>
@@ -106,6 +124,10 @@ window.LM.registerPage('permissions', `
   <div class="analogy-box">
     <div class="analogy-label">💡 Real-World Analogy</div>
     Standard permissions = a room has ONE key for the owner and ONE key for the department. <strong>ACL</strong> = you can make extra keys for specific people without changing the locks.
+  </div>
+  <div class="info-box note">
+    <span class="info-icon">⚖️</span>
+    <div><strong>Deep Insight: Traditional vs. ACLs:</strong> Traditional permissions are simple and fast but lack granularity. If User A and User B need write access, but User C only needs read access, traditional permissions force you to create a specific group just for this exact scenario. ACLs solve this by allowing you to explicitly define customized access for each individual user or group, completely bypassing the rigid owner/group/other limitation. Always check for the <code class="code-inline">+</code> symbol at the end of traditional permissions to see if an ACL is present!</div>
   </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># View ACLs</span>
 <span class="cmd">getfacl</span> <span class="path">file.txt</span>
@@ -133,6 +155,10 @@ window.LM.registerPage('permissions', `
 <div class="content-section">
   <h2 class="section-title"><span class="icon">🛡️</span> Implementing Least Privilege</h2>
   <p><strong>Principle:</strong> Give users the <em>minimum</em> permissions needed to do their job — nothing more.</p>
+  <div class="info-box note">
+    <span class="info-icon">🧠</span>
+    <div><strong>Deep Insight:</strong> Least Privilege isn't just about restricting human users; it's heavily about restricting background <strong>processes</strong> and <strong>daemons</strong>. If a web server process is compromised, the attacker only gains the permissions of the web server user (like <code class="code-inline">www-data</code>). If that user is running as root or has unnecessarily broad permissions to system files, a small vulnerability instantly becomes a full system compromise. Always scope user and service permissions strictly to their operational requirements.</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash — real-world example</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># Scenario: Web developer needs to edit website files, not system configs</span>
 
 <span class="comment"># 1. Create a web group</span>
@@ -155,6 +181,10 @@ window.LM.registerPage('permissions', `
 
 <div class="content-section">
   <h2 class="section-title"><span class="icon">🔧</span> Troubleshooting Permission Issues</h2>
+  <div class="info-box note">
+    <span class="info-icon">🧠</span>
+    <div><strong>Deep Insight:</strong> The most common mistake in permission troubleshooting is forgetting that directory traversal requires the <strong>Execute (<code class="code-inline">x</code>)</strong> permission. If you have full read/write permissions to a target file, but any parent directory in the path lacks execute permissions for your user, you will still get a <em>"Permission denied"</em> error. Permissions are evaluated top-down from the root (<code class="code-inline">/</code>) directory directly to the target file. Always check the full path!</div>
+  </div>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># "Permission denied" — Check these in order:</span>
 
 <span class="comment"># 1. Who am I and what groups am I in?</span>
@@ -206,11 +236,11 @@ window.LM.registerPage('permissions', `
 
 <button class="mark-complete-btn">☐ Mark as Complete</button>
 `, [
-  {title:'Linux Permissions chmod chown', section:'Linux Basics'},
-  {title:'User Management useradd usermod', section:'Linux Basics'},
-  {title:'Group Management groupadd', section:'Linux Basics'},
-  {title:'SUID SGID Sticky Bit', section:'Linux Basics'},
-  {title:'ACL setfacl getfacl', section:'Linux Basics'},
-  {title:'Least Privilege Principle', section:'Linux Basics'},
-  {title:'Troubleshooting Permission Denied', section:'Linux Basics'}
+  { title: 'Linux Permissions chmod chown', section: 'Linux Basics' },
+  { title: 'User Management useradd usermod', section: 'Linux Basics' },
+  { title: 'Group Management groupadd', section: 'Linux Basics' },
+  { title: 'SUID SGID Sticky Bit', section: 'Linux Basics' },
+  { title: 'ACL setfacl getfacl', section: 'Linux Basics' },
+  { title: 'Least Privilege Principle', section: 'Linux Basics' },
+  { title: 'Troubleshooting Permission Denied', section: 'Linux Basics' }
 ]);

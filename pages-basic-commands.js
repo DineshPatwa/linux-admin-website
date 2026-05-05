@@ -126,6 +126,63 @@ window.LM.registerPage('basic-commands', `
 </div>
 
 <div class="content-section">
+  <h2 class="section-title"><span class="icon">🔗</span> Symlinks & Hardlinks</h2>
+  <div class="analogy-box">
+    <div class="analogy-label">💡 Real-World Analogy</div>
+    Think of a <strong>Hard Link</strong> as giving an existing house an additional address (both point to the exact same physical house). A <strong>Symbolic (Soft) Link</strong> is like a shortcut on your desktop—it's just a pointer to the actual file location.
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-hardlinks">Hard Links</button>
+    <button class="tab-btn" data-tab="tab-symlinks">Symbolic (Soft) Links</button>
+    <button class="tab-btn" data-tab="tab-broken">Broken Links</button>
+  </div>
+  
+  <div class="tab-content active" id="tab-hardlinks">
+    <p><strong>Characteristics of Hard Links:</strong></p>
+    <ul>
+      <li><strong>Shared Inode Numbers:</strong> Hard links share the exact same inode number as the original file.</li>
+      <li><strong>Same Physical File:</strong> They point directly to the data blocks on the disk.</li>
+      <li>Cannot link to directories (to avoid loops).</li>
+      <li>Cannot span across different filesystems or partitions.</li>
+    </ul>
+    <p><strong>Advantages & Use Cases:</strong> Useful for creating reliable backups of files where the data shouldn't be lost even if the original filename is deleted.</p>
+    <p><strong>Modifying and Deleting:</strong></p>
+    <ul>
+      <li>Modifying a hard link modifies the underlying data, affecting all other hard links.</li>
+      <li>Deleting a hard link just reduces the file's "link count". The data is permanently deleted only when the link count reaches zero.</li>
+    </ul>
+    <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="cmd">ln</span> <span class="path">file.txt</span> <span class="path">hardlink.txt</span>   <span class="comment"># Create a hard link</span>
+<span class="cmd">ls</span> <span class="flag">-li</span>                       <span class="comment"># Verify shared inode numbers (1st column)</span></pre></div>
+  </div>
+
+  <div class="tab-content" id="tab-symlinks">
+    <p><strong>Differences & Characteristics:</strong></p>
+    <ul>
+      <li>Has its own unique inode number and permissions.</li>
+      <li>Points to a file path, not the physical data.</li>
+      <li>Can span across different filesystems and can link to directories.</li>
+    </ul>
+    <p><strong>Advantages & Use Cases:</strong> Ideal for creating convenient shortcuts to deeply nested files/directories, or abstracting versioned library paths (e.g., pointing <code class="code-inline">lib.so</code> to <code class="code-inline">lib.so.1.2</code>).</p>
+    <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="cmd">ln</span> <span class="flag">-s</span> <span class="path">/var/log/syslog</span> <span class="path">mylog</span>  <span class="comment"># Create a symbolic link</span>
+<span class="cmd">ls</span> <span class="flag">-l</span> <span class="path">mylog</span>                  <span class="comment"># Shows: mylog -> /var/log/syslog</span></pre></div>
+  </div>
+
+  <div class="tab-content" id="tab-broken">
+    <p><strong>Finding and Fixing Broken Symbolic Links:</strong></p>
+    <p>When the original file of a symbolic link is deleted or moved, the link becomes "broken" (it points to a non-existent path).</p>
+    <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># Find broken symbolic links in the current directory and below</span>
+<span class="cmd">find</span> <span class="path">.</span> <span class="flag">-xtype l</span>
+
+<span class="comment"># Find and immediately delete broken links</span>
+<span class="cmd">find</span> <span class="path">.</span> <span class="flag">-xtype l -delete</span>
+
+<span class="comment"># Fix a broken link by updating its target</span>
+<span class="cmd">ln</span> <span class="flag">-sf</span> <span class="path">new_target</span> <span class="path">broken_link</span></pre></div>
+  </div>
+</div>
+
+<div class="content-section">
   <h2 class="section-title"><span class="icon">🗜️</span> File Compression & Archiving</h2>
   <div class="code-block"><div class="code-header"><span class="lang">bash</span><button class="copy-btn">📋 Copy</button></div><pre><span class="comment"># tar — Tape ARchive (most common in Linux)</span>
 <span class="cmd">tar</span> <span class="flag">-cvf</span> <span class="path">archive.tar</span> <span class="path">folder/</span>       <span class="comment"># Create tar archive</span>
@@ -210,13 +267,14 @@ curl
 
 <button class="mark-complete-btn">☐ Mark as Complete</button>
 `, [
-  {title:'Basic Linux Commands', section:'Linux Basics'},
-  {title:'Navigating Filesystem - cd, ls, pwd', section:'Linux Basics'},
-  {title:'Managing Files - cat, cp, mv, rm', section:'Linux Basics'},
-  {title:'System Monitoring - top, free, df', section:'Linux Basics'},
-  {title:'Network Commands - ip, ping, ss', section:'Linux Basics'},
-  {title:'Package Management - yum, dnf, rpm', section:'Linux Basics'},
-  {title:'File Compression - tar, gzip, zip', section:'Linux Basics'},
-  {title:'RHEL 6 7 8 9 Comparison', section:'Linux Basics'},
-  {title:'Kickstart Installation', section:'Linux Basics'}
+  { title: 'Basic Linux Commands', section: 'Linux Basics' },
+  { title: 'Navigating Filesystem - cd, ls, pwd', section: 'Linux Basics' },
+  { title: 'Managing Files - cat, cp, mv, rm', section: 'Linux Basics' },
+  { title: 'System Monitoring - top, free, df', section: 'Linux Basics' },
+  { title: 'Network Commands - ip, ping, ss', section: 'Linux Basics' },
+  { title: 'Package Management - yum, dnf, rpm', section: 'Linux Basics' },
+  { title: 'Symlinks & Hardlinks', section: 'Linux Basics' },
+  { title: 'File Compression - tar, gzip, zip', section: 'Linux Basics' },
+  { title: 'RHEL 6 7 8 9 Comparison', section: 'Linux Basics' },
+  { title: 'Kickstart Installation', section: 'Linux Basics' }
 ]);

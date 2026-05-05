@@ -86,14 +86,17 @@
       item.classList.toggle('active', item.dataset.page === pageId);
     });
 
-    // Ensure parent group is open
+    // Ensure all parent groups are open
     const activeItem = document.querySelector('.nav-item[data-page="' + pageId + '"]');
     if (activeItem) {
-      const parentGroup = activeItem.closest('.nav-group-content');
-      if (parentGroup && !parentGroup.classList.contains('open')) {
-        parentGroup.classList.add('open');
-        const toggleBtn = document.querySelector('[data-group="' + parentGroup.id.replace('group-', '') + '"]');
-        if (toggleBtn) toggleBtn.classList.add('open');
+      let parentGroup = activeItem.closest('.nav-group-content');
+      while (parentGroup) {
+        if (!parentGroup.classList.contains('open')) {
+          parentGroup.classList.add('open');
+          const toggleBtn = document.querySelector('[data-group="' + parentGroup.id.replace('group-', '') + '"]');
+          if (toggleBtn) toggleBtn.classList.add('open');
+        }
+        parentGroup = parentGroup.parentElement ? parentGroup.parentElement.closest('.nav-group-content') : null;
       }
     }
 
